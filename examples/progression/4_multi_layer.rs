@@ -22,21 +22,21 @@ use sfbinpack::chess::piecetype::PieceType;
 
 
 fn main() {
-    let hl_size = 1024;
+    let hl_size = 512;
     let initial_lr = 0.001;
     let final_lr = initial_lr * 0.3 * 0.3;
     let superbatches = 50;
     const NUM_OUTPUT_BUCKETS: usize = 8;
     #[rustfmt::skip]
     const BUCKET_LAYOUT: [usize; 32] = [
-        0, 1, 2, 3, 
-        4, 4, 5, 5, 
-        6, 6, 6, 6, 
-        6, 6, 6, 6, 
-        6, 6, 6, 6, 
-        6, 6, 6, 6, 
-        6, 6, 6, 6, 
-        6, 6, 6, 6, 
+        0, 0, 0, 0, 
+        0, 0, 0, 0, 
+        0, 0, 0, 0, 
+        0, 0, 0, 0, 
+        0, 0, 0, 0, 
+        0, 0, 0, 0, 
+        0, 0, 0, 0, 
+        0, 0, 0, 0, 
     ];
 
     const NUM_INPUT_BUCKETS: usize = get_num_buckets(&BUCKET_LAYOUT);
