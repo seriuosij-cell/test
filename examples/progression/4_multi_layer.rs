@@ -25,7 +25,7 @@ fn main() {
     let hl_size = 512;
     let initial_lr = 0.001;
     let final_lr = initial_lr * 0.3 * 0.3 * 0.3;
-    let superbatches = 50;
+    let superbatches = 100;
     const NUM_OUTPUT_BUCKETS: usize = 8;
     #[rustfmt::skip]
     const BUCKET_LAYOUT: [usize; 32] = [
@@ -96,7 +96,7 @@ fn main() {
     });
 
     let schedule = TrainingSchedule {
-        net_id: "test6".to_string(),
+        net_id: "test".to_string(),
         eval_scale: 400.0,
         steps: TrainingSteps {
             batch_size: 16_384,
@@ -109,12 +109,12 @@ fn main() {
         save_rate: 100,
     };
 
-    let settings = LocalSettings { threads: 4, test_set: None, output_directory: "checkpoints", batch_queue_size: 64 };
+    let settings = LocalSettings { threads: 8, test_set: None, output_directory: "checkpoints", batch_queue_size: 64 };
 
     let dataloader = {
         let file_path = "/workspace/data.binpack";
         let buffer_size_mb = 4096;
-        let threads = 4;
+        let threads = 8;
         fn filter(entry: &TrainingDataEntry) -> bool {
                 !entry.pos.is_checked(entry.pos.side_to_move())
                 && entry.score.unsigned_abs() <= 32000
