@@ -87,7 +87,7 @@ fn main() {
             l3.forward(hl3).select(output_buckets)
         });
 
-    trainer.optimiser.set_params(optimiser::AdamWParams {
+    trainer.optimiser.set_params(AdamWParams {
         decay: 0.01,
         beta1: 0.9,
         beta2: 0.999,
