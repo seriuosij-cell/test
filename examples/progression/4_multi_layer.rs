@@ -22,10 +22,10 @@ use sfbinpack::chess::piecetype::PieceType;
 
 
 fn main() {
-    let hl_size = 512;
+    let hl_size = 1024;
     let initial_lr = 0.001;
     let final_lr = initial_lr * 0.3 * 0.3 * 0.3;
-    let superbatches = 100;
+    let superbatches = 50;
     const NUM_OUTPUT_BUCKETS: usize = 8;
     #[rustfmt::skip]
     const BUCKET_LAYOUT: [usize; 32] = [
