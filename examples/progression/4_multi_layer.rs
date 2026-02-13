@@ -24,7 +24,7 @@ use sfbinpack::chess::piecetype::PieceType;
 fn main() {
     let hl_size = 512;
     let initial_lr = 0.001;
-    let final_lr = initial_lr * 0.3 * 0.3;
+    let final_lr = initial_lr * 0.3 * 0.3 * 0.3;
     let superbatches = 50;
     const NUM_OUTPUT_BUCKETS: usize = 8;
     #[rustfmt::skip]
@@ -87,10 +87,13 @@ fn main() {
             l3.forward(hl3).select(output_buckets)
         });
 
-    // need to account for factoriser weight magnitudes
-    let stricter_clipping = AdamWParams { max_weight: 0.99, min_weight: -0.99, ..Default::default() };
-    trainer.optimiser.set_params_for_weight("l0w", stricter_clipping);
-    trainer.optimiser.set_params_for_weight("l0f", stricter_clipping);
+    trainer.optimiser.set_params(optimiser::AdamWParams {
+        decay: 0.01,
+        beta1: 0.9,
+        beta2: 0.999,
+        min_weight: -0.99,
+        max_weight: 0.99,
+    });
 
     let schedule = TrainingSchedule {
         net_id: "test6".to_string(),
@@ -115,7 +118,6 @@ fn main() {
         fn filter(entry: &TrainingDataEntry) -> bool {
                 !entry.pos.is_checked(entry.pos.side_to_move())
                 && entry.score.unsigned_abs() <= 32000
-                && entry.mv.mtype() == MoveType::Normal
                 && entry.pos.piece_at(entry.mv.to()).piece_type() == PieceType::None
         }
         SfBinpackLoader::new(file_path, buffer_size_mb, threads, filter)
