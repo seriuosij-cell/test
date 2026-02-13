@@ -109,7 +109,7 @@ fn main() {
         save_rate: 100,
     };
 
-    let settings = LocalSettings { threads: 8, test_set: None, output_directory: "checkpoints", batch_queue_size: 64 };
+    let settings = LocalSettings { threads: 8, test_set: None, output_directory: "checkpoints", batch_queue_size: 128 };
 
     let dataloader = {
         let file_path = "/workspace/data.binpack";
