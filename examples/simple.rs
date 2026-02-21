@@ -24,7 +24,7 @@ fn main() {
     let l1_size = 1024;
     let initial_lr = 0.001;
     let final_lr = initial_lr * 0.3 * 0.3 * 0.3;
-    let superbatches = 50;
+    let superbatches = 100;
     const NUM_OUTPUT_BUCKETS: usize = 8;
 
     let mut trainer = ValueTrainerBuilder::default()
@@ -77,7 +77,7 @@ fn main() {
             start_superbatch: 1,
             end_superbatch: superbatches,
         },
-        wdl_scheduler: wdl::ConstantWDL { value: 0.5 },
+        wdl_scheduler: wdl::ConstantWDL { value: 0.7 },
         lr_scheduler: lr::CosineDecayLR { initial_lr, final_lr, final_superbatch: superbatches },
         save_rate: 100,
     };
