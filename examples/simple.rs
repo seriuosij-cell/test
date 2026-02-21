@@ -1,6 +1,7 @@
 use bullet_lib::{
     game::{
         inputs::{ChessBucketsMirrored, get_num_buckets},
+        inputs::Chess768,
         outputs::MaterialCount,
     },
     nn::{
@@ -29,6 +30,7 @@ fn main() {
 
     let mut trainer = ValueTrainerBuilder::default()
         .dual_perspective()
+        .inputs(Chess768)
         .optimiser(AdamW)
         .output_buckets(MaterialCount::<NUM_OUTPUT_BUCKETS>)
         .save_format(&[
