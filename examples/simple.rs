@@ -1,7 +1,6 @@
 use bullet_lib::{
     game::{
         inputs::{ChessBucketsMirrored, get_num_buckets},
-        inputs::Chess768,
         outputs::MaterialCount,
     },
     nn::{
@@ -18,19 +17,33 @@ use bullet_lib::{
 
 use bullet_lib::value::loader::SfBinpackLoader;
 use sfbinpack::TrainingDataEntry;
+use sfbinpack::chess::r#move::MoveType;
 use sfbinpack::chess::piecetype::PieceType;
-
 
 fn main() {
     let l1_size = 1024;
     let initial_lr = 0.001;
-    let final_lr = initial_lr * 0.3 * 0.3 * 0.3;
-    let superbatches = 100;
+    let final_lr = initial_lr * 0.3 * 0.3 * 0.3 * 0.3;
+    let superbatches = 400;
     const NUM_OUTPUT_BUCKETS: usize = 8;
+
+    #[rustfmt::skip]
+    const BUCKET_LAYOUT: [usize; 32] = [
+        0, 0, 1, 1, 
+        2, 2, 2, 2, 
+        3, 3, 3, 3, 
+        3, 3, 3, 3, 
+        3, 3, 3, 3, 
+        3, 3, 3, 3, 
+        3, 3, 3, 3, 
+        3, 3, 3, 3,
+    ];
+
+    const NUM_INPUT_BUCKETS: usize = get_num_buckets(&BUCKET_LAYOUT);
 
     let mut trainer = ValueTrainerBuilder::default()
         .dual_perspective()
-        .inputs(Chess768)
+        .inputs(ChessBucketsMirrored::new(BUCKET_LAYOUT))
         .optimiser(AdamW)
         .output_buckets(MaterialCount::<NUM_OUTPUT_BUCKETS>)
         .save_format(&[
@@ -46,7 +59,7 @@ fn main() {
         .loss_fn(|output, target| output.sigmoid().squared_error(target))
         .build(|builder, stm_inputs, ntm_inputs, output_buckets| {
             // input layer weights
-            let l0 = builder.new_affine("l0", 768, l1_size);
+            let l0 = builder.new_affine("l0", 768 * NUM_INPUT_BUCKETS, l1_size);
 
             // layerstack weights
             let l1 = builder.new_affine("l1", l1_size, NUM_OUTPUT_BUCKETS * 16);
@@ -81,18 +94,19 @@ fn main() {
         },
         wdl_scheduler: wdl::ConstantWDL { value: 0.7 },
         lr_scheduler: lr::CosineDecayLR { initial_lr, final_lr, final_superbatch: superbatches },
-        save_rate: 100,
+        save_rate: 40,
     };
 
-    let settings = LocalSettings { threads: 8, test_set: None, output_directory: "checkpoints", batch_queue_size: 64 };
+    let settings = LocalSettings { threads: 4, test_set: None, output_directory: "checkpoints", batch_queue_size: 64 };
 
     let dataloader = {
         let file_path = "/workspace/data.binpack";
         let buffer_size_mb = 4096;
-        let threads = 8;
+        let threads = 6;
         fn filter(entry: &TrainingDataEntry) -> bool {
                 !entry.pos.is_checked(entry.pos.side_to_move())
-                && entry.score.unsigned_abs() <= 32000
+                && entry.score.unsigned_abs() <= 10000
+                && entry.mv.mtype() == MoveType::Normal
                 && entry.pos.piece_at(entry.mv.to()).piece_type() == PieceType::None
         }
         SfBinpackLoader::new(file_path, buffer_size_mb, threads, filter)
