@@ -24,7 +24,7 @@ fn main() {
     let l1_size = 1024;
     let initial_lr = 0.001;
     let final_lr = initial_lr * 0.3 * 0.3 * 0.3;
-    let superbatches = 2;
+    let superbatches = 100;
     const NUM_OUTPUT_BUCKETS: usize = 8;
 
     let mut trainer = ValueTrainerBuilder::default()
