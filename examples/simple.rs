@@ -1,6 +1,6 @@
 use bullet_lib::{
     game::{
-        inputs::{ChessBucketsMirrored, get_num_buckets},
+        inputs::{Chess768},
         outputs::MaterialCount,
     },
     nn::{
@@ -23,27 +23,13 @@ use sfbinpack::chess::piecetype::PieceType;
 fn main() {
     let l1_size = 1024;
     let initial_lr = 0.001;
-    let final_lr = initial_lr * 0.3 * 0.3 * 0.3 * 0.3;
-    let superbatches = 400;
+    let final_lr = initial_lr * 0.3 * 0.3 * 0.3;
+    let superbatches = 2;
     const NUM_OUTPUT_BUCKETS: usize = 8;
-
-    #[rustfmt::skip]
-    const BUCKET_LAYOUT: [usize; 32] = [
-        0, 0, 1, 1, 
-        2, 2, 2, 2, 
-        3, 3, 3, 3, 
-        3, 3, 3, 3, 
-        3, 3, 3, 3, 
-        3, 3, 3, 3, 
-        3, 3, 3, 3, 
-        3, 3, 3, 3,
-    ];
-
-    const NUM_INPUT_BUCKETS: usize = get_num_buckets(&BUCKET_LAYOUT);
 
     let mut trainer = ValueTrainerBuilder::default()
         .dual_perspective()
-        .inputs(ChessBucketsMirrored::new(BUCKET_LAYOUT))
+        .inputs(Chess768)
         .optimiser(AdamW)
         .output_buckets(MaterialCount::<NUM_OUTPUT_BUCKETS>)
         .save_format(&[
@@ -59,7 +45,7 @@ fn main() {
         .loss_fn(|output, target| output.sigmoid().squared_error(target))
         .build(|builder, stm_inputs, ntm_inputs, output_buckets| {
             // input layer weights
-            let l0 = builder.new_affine("l0", 768 * NUM_INPUT_BUCKETS, l1_size);
+            let l0 = builder.new_affine("l0", 768, l1_size);
 
             // layerstack weights
             let l1 = builder.new_affine("l1", l1_size, NUM_OUTPUT_BUCKETS * 16);
@@ -97,12 +83,12 @@ fn main() {
         save_rate: 40,
     };
 
-    let settings = LocalSettings { threads: 4, test_set: None, output_directory: "checkpoints", batch_queue_size: 64 };
+    let settings = LocalSettings { threads: 2, test_set: None, output_directory: "checkpoints", batch_queue_size: 16 };
 
     let dataloader = {
         let file_path = "/workspace/data.binpack";
         let buffer_size_mb = 4096;
-        let threads = 6;
+        let threads = 2;
         fn filter(entry: &TrainingDataEntry) -> bool {
                 !entry.pos.is_checked(entry.pos.side_to_move())
                 && entry.score.unsigned_abs() <= 10000
