@@ -21,10 +21,10 @@ use sfbinpack::chess::r#move::MoveType;
 use sfbinpack::chess::piecetype::PieceType;
 
 fn main() {
-    let l1_size = 1024;
+    let l1_size = 256;
     let initial_lr = 0.001;
-    let final_lr = initial_lr * 0.3 * 0.3 * 0.3;
-    let superbatches = 100;
+    let final_lr = initial_lr * 0.3 * 0.3 * 0.3 * 0.3;
+    let superbatches = 400;
     const NUM_OUTPUT_BUCKETS: usize = 8;
 
     let mut trainer = ValueTrainerBuilder::default()
@@ -83,12 +83,12 @@ fn main() {
         save_rate: 40,
     };
 
-    let settings = LocalSettings { threads: 2, test_set: None, output_directory: "checkpoints", batch_queue_size: 16 };
+    let settings = LocalSettings { threads: 4, test_set: None, output_directory: "checkpoints", batch_queue_size: 64 };
 
     let dataloader = {
         let file_path = "/workspace/data.binpack";
         let buffer_size_mb = 4096;
-        let threads = 2;
+        let threads = 4;
         fn filter(entry: &TrainingDataEntry) -> bool {
                 !entry.pos.is_checked(entry.pos.side_to_move())
                 && entry.score.unsigned_abs() <= 10000
