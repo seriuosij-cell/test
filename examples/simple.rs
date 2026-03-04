@@ -83,12 +83,12 @@ fn main() {
         save_rate: 40,
     };
 
-    let settings = LocalSettings { threads: 4, test_set: None, output_directory: "checkpoints", batch_queue_size: 64 };
+    let settings = LocalSettings { threads: 2, test_set: None, output_directory: "checkpoints", batch_queue_size: 64 };
 
     let dataloader = {
         let file_path = "/workspace/data.binpack";
         let buffer_size_mb = 4096;
-        let threads = 4;
+        let threads = 8;
         fn filter(entry: &TrainingDataEntry) -> bool {
                 !entry.pos.is_checked(entry.pos.side_to_move())
                 && entry.score.unsigned_abs() <= 10000
